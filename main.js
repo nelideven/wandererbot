@@ -143,10 +143,10 @@ async function main() {
                     const block = bot.blockAtCursor(5); // Checks for blocks within 5 blocks in the bot's crosshair4
                     const entity = bot.entityAtCursor(5); // Checks for entities within 5 blocks in the cursor
                     if (entity) {
-                        bot.activateEntity(entity); // Interact with the block in the crosshair
-                    } else if (block) {
-                        bot.activateBlock(block); // Interact (right-click) with the entity
+                        bot.activateEntity(entity); // Interact with the entity in the crosshair
                         console.log(`Attempting interaction with ${entity.name || entity.objectType}. This might not work as expected.`);
+                    } else if (block) {
+                        bot.activateBlock(block); // Interact with the block in the crosshair
                     } else {
                         bot.swingArm(); // Default swing if nothing is in the crosshair
                     }
