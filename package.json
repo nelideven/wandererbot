@@ -1,9 +1,22 @@
-{ 
+{
+  "name": "wandererbot",
+  "version": "1.0.0",
+  "description": "A ready-to-use JS Minecraft bot script, using mineflayer, which lets you deploy Minecraft bots and control them, either manually (via browser, like classic.minecraft.net) or automatically (following nearby entities)",
+  "license": "GPL-3.0-or-later",
+  "author": "nelideven",
   "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "test": "--help"
+  },
   "dependencies": {
     "canvas": "^3.1.0",
-    "mineflayer": "^4.26.0",
+    "express": "^5.1.0",
+    "http": "^0.0.1-security",
+    "mineflayer": "^4.27.0",
     "prismarine-viewer": "^1.33.0",
+    "readline": "^1.3.0",
+    "socket.io": "^4.8.1",
     "yargs": "^17.7.2"
   }
 }
