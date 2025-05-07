@@ -7,7 +7,7 @@
 
 const mineflayer = require("mineflayer");
 const readline = require("readline");
-const yargs = require('yargs');
+const yargs = require("yargs");
 
 // Parse arguments with yargs
 const argv = yargs
@@ -18,6 +18,7 @@ const argv = yargs
     .option('port', { alias: 'p', description: 'The server port (defaults to 25565)', type: 'number', default: 25565 })
     .option('version', { alias: 'v', description: 'The Minecraft version (defaults to the latest version)', type: 'string' })
     .option('flybug', { description: 'Enable flybug mode (well, flying)', type: 'boolean', default: false })
+    .option('flybugconfirm', { alias: 'fbc', description: 'Enable flybug mode (well, flying) without confirmation', type: 'boolean', default: false })
     .option('manual', { alias: 'm', description: 'Enable manual movement mode (website controls, wasd)', type: 'boolean', default: false })
     .option('nomove', { alias: 'n', description: 'Disable automatic movement towards the nearest entity', type: 'boolean', default: false })
     .option('viewoff', { alias: 'vo', description: 'Disable the bot view (disables prismarine-viewer)', type: 'boolean', default: false })
@@ -37,32 +38,35 @@ const argv = yargs
     .help().alias('help', 'h').argv;
 
 async function flybugConfirm() {
-    console.log("WARNING!")
-    console.log("You have enabled the flybug mode. This may cause the bot to fly uncontrollably.");
-    console.log("This mode is not recommended for use in multiplayer servers as it may cause permanent bans.");
-    if (argv.password) {
-        console.log("You are using an OFFICIAL MINECRAFT account. Your account may or WILL be at risk.");
-        console.log("Any damage caused to your account is solely by your own responsibility. As per the GPLv3 license, I (the developer) are NOT liable for any damages, including but not limited to account bans, loss of items, or any other consequences that may arise from the use of this specific feature.");
-        console.log("This chance lets you RECONSIDER the use of this feature. Should you be aware AND accept the consequences caused, you may proceed.");
-    } else {
-        console.log("Although you are probably not using an official minecraft account, you are still prone to IP bans.")
-        console.log("You should proceed with caution. Any ban sentences are solely your responsibility.")
+    if (argv.flybugconfirm) { console.log("You have enabled the flybug mode without confirmation. Note that by auto-confirming, you are aware AND accept the consequences caused."); }
+    else {
+        console.log("WARNING!")
+        console.log("You have enabled the flybug mode. This may cause the bot to fly uncontrollably.");
+        console.log("This mode is not recommended for use in multiplayer servers as it may cause permanent bans.");
+        if (argv.password) {
+            console.log("You are using an OFFICIAL MINECRAFT account. Your account may or WILL be at risk.");
+            console.log("Any damage caused to your account is solely by your own responsibility. As per the GPLv3 license, I (the developer) are NOT liable for any damages, including but not limited to account bans, loss of items, or any other consequences that may arise from the use of this specific feature.");
+            console.log("This chance lets you RECONSIDER the use of this feature. Should you be aware AND accept the consequences caused, you may proceed.");
+        } else {
+            console.log("Although you are probably not using an official minecraft account, you are still prone to IP bans.")
+            console.log("You should proceed with caution. Any ban sentences are solely your responsibility.")
+        }
+        return new Promise((resolve) => {
+            const rl = readline.createInterface({
+                input: process.stdin,
+                output: process.stdout
+            });
+            rl.question("Do you want to proceed? (y/n): ", (answer) => {
+                rl.close();
+                if (answer.toLowerCase() === "y") {
+                    resolve(true); // Resolve the promise to continue execution
+                } else {
+                    console.log("Abort");
+                    process.exit(0); // Stop execution entirely
+                }
+            });
+        });
     }
-    return new Promise((resolve) => {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
-        rl.question("Do you want to proceed? (y/n): ", (answer) => {
-            rl.close();
-            if (answer.toLowerCase() === "y") {
-                resolve(true); // Resolve the promise to continue execution
-            } else {
-                console.log("Abort");
-                process.exit(0); // Stop execution entirely
-            }
-        });
-    });
 }
 
 async function main() {
@@ -90,7 +94,7 @@ async function main() {
 
     bot.on("end", () => { console.log("Bot has disconnected"); process.exit(); });
     bot.on("kicked", (reason) => { console.log(`Bot was kicked for reason: ${reason.toString()}`); process.exit(); });
-    bot.on("error", (err) => { console.error("An error occurred:", err); process.exit(); });
+    bot.on("error", (err) => { console.error("An error occurred:", err); });
 
     if (argv.manual) {
         bot.once("spawn", () => {
@@ -246,7 +250,7 @@ async function main() {
             if (Array.isArray(extraData)) {
                 const playerName = extraData[0]; // The player's name
                 const chatMessage = extraData[1]; // The chat message
-                console.log(`${playerName}${chatMessage}`); // Log the properly formatted message 
+                console.log(`${playerName}${chatMessage}${message}`); // Log the properly formatted message 
             } else console.log(`${message}`); // Fallback to the plain message text 
         } catch (error) {console.error("Error processing chat message:", error);}
     });
