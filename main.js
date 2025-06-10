@@ -71,7 +71,7 @@ async function flybugConfirm() {
 
 async function main() {
     // Define settings for Mineflayer bot
-    var settings = { username: argv.username, host: argv.host, port: argv.port, version: argv.version };
+    var settings = { username: argv.username, host: argv.host, port: argv.port, version: argv.version, resourcePack: false };
 
     if (argv.password) {
         settings.auth = "microsoft";
@@ -136,7 +136,7 @@ async function main() {
 
             socket.on('action', (action) => {
                 if (action === 'mine') {
-                    const target = bot.entityAtCursor(5); // Checks for entities within 5 blocks in the bot's crosshair
+                    const target = bot.entityAtCursor(3); // Checks for entities within 3 blocks in the bot's crosshair
                     if (target) {
                         bot.attack(target); // Attack the entity in the crosshair
                     } else {
@@ -144,8 +144,8 @@ async function main() {
                     }
                 }
                 if (action === 'place') {
-                    const block = bot.blockAtCursor(5); // Checks for blocks within 5 blocks in the bot's crosshair4
-                    const entity = bot.entityAtCursor(5); // Checks for entities within 5 blocks in the cursor
+                    const block = bot.blockAtCursor(4); // Checks for blocks within 4 blocks in the bot's crosshair
+                    const entity = bot.entityAtCursor(3); // Checks for entities within 3 blocks in the cursor
                     if (entity) {
                         bot.activateEntity(entity); // Interact with the entity in the crosshair
                         console.log(`Attempting interaction with ${entity.name || entity.objectType}. This might not work as expected.`);
@@ -155,7 +155,43 @@ async function main() {
                         bot.swingArm(); // Default swing if nothing is in the crosshair
                     }
                 }
-                if (action === 'jump') bot.setControlState('jump', true);
+                if (action === 'sneak') {
+                    bot.setControlState("sneak", true); // Start sneaking
+                }
+                if (action === 'sprint') {
+                    bot.setControlState("sprint", true); // Start sprinting
+                }
+                if (action === 'drop') {
+                    const heldItem = bot.inventory.slots[bot.quickBarSlot + 36]; // Get item in active slot
+                    if (heldItem) {
+                        bot.toss(heldItem.type, null, 1); // Drop one item
+                        console.log(`Dropped 1x ${heldItem.name}`); 
+                    }
+                }
+            });
+
+            socket.on('hotbar', (slot) => {
+                if (slot < 0 || slot > 8) {
+                    console.error('Invalid hotbar slot:', slot);
+                } else {
+                    bot.setQuickBarSlot(slot);
+                }
+            });
+
+            socket.on('whotbar', (mode) => {
+                if (mode === 'up') {
+                    if (bot.quickBarSlot >= 8) {
+                        bot.setQuickBarSlot(0); // Wrap around to the first slot
+                    } else {
+                        bot.setQuickBarSlot(bot.quickBarSlot + 1);
+                    }
+                } else if (mode === 'down') {
+                    if (bot.quickBarSlot <= 0) {
+                        bot.setQuickBarSlot(8); // Wrap around to the last slot
+                    } else {
+                        bot.setQuickBarSlot(bot.quickBarSlot - 1);
+                    }
+                }
             });
 
             socket.on('disconnect', () => {
