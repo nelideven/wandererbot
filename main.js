@@ -106,6 +106,7 @@ async function main() {
         const express = require('express');
         const http = require('http');
         const { Server } = require('socket.io');
+        const Vec3 = require('vec3');
 
         const app = express();
         const server = http.createServer(app);
@@ -135,17 +136,21 @@ async function main() {
             });
 
             socket.on('action', (action) => {
+                let heldItem = bot.inventory.slots[bot.quickBarSlot + 36]; // Get item in active slot
+                let block = bot.blockAtCursor(4); // Checks for blocks within 4 blocks in the bot's crosshair
+                let entity = bot.entityAtCursor(3); // Checks for entities within 3 blocks in the cursor
+
                 if (action === 'mine') {
-                    const target = bot.entityAtCursor(3); // Checks for entities within 3 blocks in the bot's crosshair
-                    if (target) {
-                        bot.attack(target); // Attack the entity in the crosshair
+                    if (entity) {
+                        bot.attack(entity); // Attack the entity in the crosshair
+                    } else if (block) {
+                        bot.dig(block); // Mining block in the crosshair
                     } else {
                         bot.swingArm(); // Default swing if nothing is in the crosshair
                     }
                 }
+
                 if (action === 'place') {
-                    const block = bot.blockAtCursor(4); // Checks for blocks within 4 blocks in the bot's crosshair
-                    const entity = bot.entityAtCursor(3); // Checks for entities within 3 blocks in the cursor
                     if (entity) {
                         bot.activateEntity(entity); // Interact with the entity in the crosshair
                         console.log(`Attempting interaction with ${entity.name || entity.objectType}. This might not work as expected.`);
@@ -155,17 +160,14 @@ async function main() {
                         bot.swingArm(); // Default swing if nothing is in the crosshair
                     }
                 }
-                if (action === 'sneak') {
-                    bot.setControlState("sneak", true); // Start sneaking
-                }
-                if (action === 'sprint') {
-                    bot.setControlState("sprint", true); // Start sprinting
-                }
+
+                if (action === 'sneak') bot.setControlState("sneak", true); // Start sneaking
+
+                if (action === 'sprint') bot.setControlState("sprint", true); // Start sprinting
+
                 if (action === 'drop') {
-                    const heldItem = bot.inventory.slots[bot.quickBarSlot + 36]; // Get item in active slot
                     if (heldItem) {
                         bot.toss(heldItem.type, null, 1); // Drop one item
-                        console.log(`Dropped 1x ${heldItem.name}`); 
                     }
                 }
             });
