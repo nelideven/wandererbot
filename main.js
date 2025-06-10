@@ -82,6 +82,10 @@ async function main() {
         await flybugConfirm(); // Call the flybug confirmation function
     }
 
+    if (argv.version) {
+        console.log('Forcing version:', argv.version);
+    }
+
     const bot = mineflayer.createBot(settings);
 
     bot.once("spawn", () => {
@@ -98,15 +102,17 @@ async function main() {
 
     if (argv.manual) {
         bot.once("spawn", () => {
-            if (argv.viewoff === false) {
+            if (!argv.viewoff) {
                 const { mineflayer: mineflayerViewer } = require('prismarine-viewer');
                 mineflayerViewer(bot, { port: 3007, firstPerson: true });
+                const inventoryViewer = require('mineflayer-web-inventory');
+                inventoryViewer(bot, { port: 3008 });
             }
         });
+
         const express = require('express');
         const http = require('http');
         const { Server } = require('socket.io');
-        const Vec3 = require('vec3');
 
         const app = express();
         const server = http.createServer(app);
@@ -144,6 +150,8 @@ async function main() {
                     if (entity) {
                         bot.attack(entity); // Attack the entity in the crosshair
                     } else if (block) {
+                        bot.stopDigging(); // Stop any ongoing digging
+                        console.log(`Attempting to mine ${block.name || block.type}.`);
                         bot.dig(block); // Mining block in the crosshair
                     } else {
                         bot.swingArm(); // Default swing if nothing is in the crosshair
