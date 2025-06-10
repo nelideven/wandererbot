@@ -78,6 +78,8 @@
         // Set the iframe's src dynamically
         document.getElementById('viewer-iframe').src = dynamicURL;
 
+        let sprintToggle = false; // Variable to track sprint state
+
         // Pointer Lock for capturing mouse input
         canvas.addEventListener('click', () => {
             canvas.requestPointerLock();
@@ -98,7 +100,16 @@
             if (key === 's') socket.emit('move', 'back');
             if (key === 'a') socket.emit('move', 'left');
             if (key === 'd') socket.emit('move', 'right');
-            if (key === ' ') socket.emit('action', 'jump');
+            if (key === ' ') socket.emit('move', 'jump');
+            if (event.code === 'ShiftLeft' || event.code === "ShiftRight") {
+                if (!sprintToggle) { socket.emit('action', 'sprint'); sprintToggle = true; }
+                else if (sprintToggle) { socket.emit('stop', 'sprint'); sprintToggle = false; }
+            }
+            if (key === 'c') socket.emit('action', 'sneak');
+            if (key === 'q') socket.emit('action', 'drop');
+            if (!isNaN(key) && key >= '1' && key <= '9') {
+                socket.emit('hotbar', parseInt(key) - 1); // Convert key to hotbar slot index (0-8)
+            }
         });
 
         window.addEventListener('keyup', (event) => {
@@ -108,11 +119,21 @@
             if (key === 'a') socket.emit('stop', 'left');
             if (key === 'd') socket.emit('stop', 'right');
             if (key === ' ') socket.emit('stop', 'jump');
+            if (key === 'c') socket.emit('stop', 'sneak');
         });
 
+        // Handle mouse clicks for actions
         canvas.addEventListener('mousedown', (event) => {
             if (event.button === 0) socket.emit('action', 'mine'); // Trigger mining (left click)
             if (event.button === 2) socket.emit('action', 'place'); // Trigger placing blocks (right click)
+        });
+
+        canvas.addEventListener('wheel', (event) => {
+            if (event.deltaY < 0) {
+                socket.emit('whotbar', 'up'); // Scroll up
+            } else {
+                socket.emit('whotbar', 'down'); // Scroll down
+            }
         });
     </script>
 </body>
