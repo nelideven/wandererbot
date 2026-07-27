@@ -3,7 +3,7 @@ A ready-to-use Python Minecraft bot script using mineflayer, which lets you depl
 
 ## Features
 - Automated walking (walks to nearby entities) or manual control via browser (localhost:3006)
-- Either a cracked account (username) or an official account (using a Microsoft account)
+- Either an offline username (username) or an official account (using a Microsoft account)
 
 ## Dependencies
 - 
